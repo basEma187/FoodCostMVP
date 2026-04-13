@@ -1,10 +1,13 @@
+import { UnitKey } from './ingredient';
+
 export interface RecipeLine {
   id: string;
   /** ingredientId OR subRecipeId */
   refId: string;
   refType: 'ingredient' | 'subrecipe';
   name: string;
-  grams: number;
+  quantity: number;
+  unit: UnitKey;
   /** calculated in service */
   lineCost?: number;
 }

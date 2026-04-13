@@ -7,22 +7,26 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
-import { Ingredient } from '../../core/models/ingredient';
+import { Ingredient, UNITS, UnitKey } from '../../core/models/ingredient';
 import { Recipe, RecipeLine } from '../../core/models/recipe';
 import { StorageService } from '../../core/services/storage';
 import { FoodCostService } from '../../core/services/food-cost';
+import { AppSelectComponent, SelectOption } from '../../shared/app-select';
 
 type ViewMode = 'list' | 'form';
 
 @Component({
   selector: 'app-recipes-page',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, AppSelectComponent],
   templateUrl: './recipes-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecipesPage {
   private readonly storage = inject(StorageService);
   private readonly fc = inject(FoodCostService);
+
+  readonly units = UNITS;
+  readonly unitOptions: SelectOption[] = UNITS.map(u => ({ value: u.key, label: `${u.short} — ${u.label}` }));
 
   recipes = signal<Recipe[]>(this.storage.getRecipes());
   ingredients = signal<Ingredient[]>(this.storage.getIngredients());
@@ -38,7 +42,8 @@ export class RecipesPage {
 
   newLineRefId = signal('');
   newLineRefType = signal<'ingredient' | 'subrecipe'>('ingredient');
-  newLineGrams = signal(100);
+  newLineQuantity = signal(100);
+  newLineUnit = signal<UnitKey>('g');
 
   settings = computed(() => this.storage.getSettings());
 
@@ -52,12 +57,20 @@ export class RecipesPage {
   availableRefs = computed(() => {
     const type = this.newLineRefType();
     if (type === 'ingredient') {
-      return this.ingredients().map(i => ({ id: i.id, name: i.name }));
+      return this.ingredients().map(i => ({
+        id: i.id,
+        name: i.name,
+        defaultUnit: i.unit as UnitKey,
+      }));
     }
     return this.recipes()
       .filter(r => r.isSubRecipe && r.id !== this.editingId())
-      .map(r => ({ id: r.id, name: r.name }));
+      .map(r => ({ id: r.id, name: r.name, defaultUnit: 'g' as UnitKey }));
   });
+
+  availableRefOptions = computed<SelectOption[]>(() =>
+    this.availableRefs().map(r => ({ value: r.id, label: r.name }))
+  );
 
   lineCost(line: RecipeLine): number {
     return this.fc.calcLineCost(line, this.ingredients(), this.recipes());
@@ -98,6 +111,15 @@ export class RecipesPage {
     this.viewMode.set('form');
   }
 
+  onRefChange(refId: string): void {
+    this.newLineRefId.set(refId);
+    // Auto-set unit to match ingredient's own unit for convenience
+    const ref = this.availableRefs().find(r => r.id === refId);
+    if (ref) {
+      this.newLineUnit.set(ref.defaultUnit);
+    }
+  }
+
   addLine(): void {
     const refId = this.newLineRefId();
     if (!refId) return;
@@ -109,11 +131,13 @@ export class RecipesPage {
       refId,
       refType: this.newLineRefType(),
       name: ref.name,
-      grams: this.newLineGrams(),
+      quantity: this.newLineQuantity(),
+      unit: this.newLineUnit(),
     };
     this.formLines.update(ls => [...ls, line]);
     this.newLineRefId.set('');
-    this.newLineGrams.set(100);
+    this.newLineQuantity.set(100);
+    this.newLineUnit.set('g');
   }
 
   removeLine(id: string): void {

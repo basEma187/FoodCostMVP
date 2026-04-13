@@ -1,119 +1,150 @@
-﻿<div class="max-w-2xl mx-auto">
-  <h1 class="text-2xl font-bold text-gray-900 mb-6">Impostazioni</h1>
+﻿<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Impostazioni</h1>
+      <p class="page-subtitle">Configura costi di energia, personale e provider OCR</p>
+    </div>
+  </div>
 
-  <div class="space-y-6">
-    <!-- Costi energia -->
-    <section aria-labelledby="energy-heading" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-      <h2 id="energy-heading" class="text-base font-semibold text-gray-800 mb-4">Energia</h2>
-      <div>
-        <label for="kwh-cost" class="block text-sm font-medium text-gray-700 mb-1">Costo energia (€/kWh)</label>
-        <input
-          id="kwh-cost"
-          type="number"
-          min="0"
-          step="0.01"
-          [ngModel]="settings().electricityCostPerKwh"
-          (ngModelChange)="update({ electricityCostPerKwh: +$event })"
-          class="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
+  <div class="settings-grid">
+
+    <!-- ── Energia ─────────────────────────────────────────────────────────── -->
+    <section class="card settings-section" aria-labelledby="energy-heading">
+      <div class="card-header">
+        <h2 id="energy-heading" class="card-title">⚡ Energia</h2>
+      </div>
+      <div class="settings-section__fields">
+        <div class="field" style="max-width:240px">
+          <label for="kwh-cost" class="field-label">Costo energia elettrica</label>
+          <div class="input-addon-wrap">
+            <input
+              id="kwh-cost"
+              type="number"
+              min="0"
+              step="0.001"
+              [ngModel]="settings().electricityCostPerKwh"
+              (ngModelChange)="update({ electricityCostPerKwh: +$event })"
+              class="field-input field-input--with-right-addon"
+            />
+            <span class="input-addon input-addon--right" aria-label="euro per kilowattora">€/kWh</span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- Costi personale -->
-    <section aria-labelledby="staff-heading" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-      <h2 id="staff-heading" class="text-base font-semibold text-gray-800 mb-4">Personale</h2>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label for="staff-count" class="block text-sm font-medium text-gray-700 mb-1">Numero dipendenti</label>
-          <input
-            id="staff-count"
-            type="number"
-            min="0"
-            [ngModel]="settings().staffCount"
-            (ngModelChange)="update({ staffCount: +$event })"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-        <div>
-          <label for="avg-salary" class="block text-sm font-medium text-gray-700 mb-1">Stipendio medio (€/mese)</label>
-          <input
-            id="avg-salary"
-            type="number"
-            min="0"
-            [ngModel]="settings().averageMonthlySalary"
-            (ngModelChange)="update({ averageMonthlySalary: +$event })"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+    <!-- ── Personale ───────────────────────────────────────────────────────── -->
+    <section class="card settings-section" aria-labelledby="staff-heading">
+      <div class="card-header">
+        <h2 id="staff-heading" class="card-title">👥 Personale</h2>
+      </div>
+      <div class="settings-section__fields">
+        <div class="settings-row">
+          <div class="field">
+            <label for="staff-count" class="field-label">Numero dipendenti</label>
+            <input
+              id="staff-count"
+              type="number"
+              min="0"
+              [ngModel]="settings().staffCount"
+              (ngModelChange)="update({ staffCount: +$event })"
+              class="field-input"
+            />
+          </div>
+          <div class="field">
+            <label for="avg-salary" class="field-label">Stipendio medio</label>
+            <div class="input-addon-wrap">
+              <span class="input-addon input-addon--left" aria-hidden="true">€</span>
+              <input
+                id="avg-salary"
+                type="number"
+                min="0"
+                [ngModel]="settings().averageMonthlySalary"
+                (ngModelChange)="update({ averageMonthlySalary: +$event })"
+                class="field-input field-input--with-left-addon"
+              />
+            </div>
+            <span class="field-hint">al mese per persona</span>
+          </div>
         </div>
       </div>
-      <p class="mt-3 text-sm text-gray-500">
-        Costo orario stimato:
-        <strong class="text-gray-900">{{ hourlyCost() | number:'1.2-2' }} €/h</strong>
-      </p>
+      <div class="settings-info">
+        <span>Costo orario stimato</span>
+        <strong>{{ hourlyCost() | number:'1.2-2' }} €/h</strong>
+      </div>
     </section>
 
-    <!-- OCR -->
-    <section aria-labelledby="ocr-heading" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-      <h2 id="ocr-heading" class="text-base font-semibold text-gray-800 mb-4">Lettura documenti (OCR)</h2>
-      <div class="mb-4">
-        <fieldset>
-          <legend class="block text-sm font-medium text-gray-700 mb-2">Provider OCR</legend>
-          <div class="flex gap-4">
-            <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+    <!-- ── OCR ─────────────────────────────────────────────────────────────── -->
+    <section class="card settings-section" aria-labelledby="ocr-heading">
+      <div class="card-header">
+        <h2 id="ocr-heading" class="card-title">📄 Lettura documenti (OCR)</h2>
+      </div>
+      <div class="settings-section__fields">
+        <fieldset style="border:none;margin:0;padding:0">
+          <legend class="field-label" style="margin-bottom:.625rem">Provider OCR</legend>
+          <div class="radio-group">
+            <label class="radio-label">
               <input
                 type="radio"
                 name="ocr-provider"
                 value="tesseract"
+                class="radio-input"
                 [ngModel]="settings().ocrProvider"
                 (ngModelChange)="update({ ocrProvider: $event })"
-                class="text-emerald-600 focus:ring-emerald-500"
               />
-              Tesseract.js (offline, gratuito)
+              <span class="radio-text">
+                <strong>Tesseract.js</strong>
+                <small>Elaborazione locale nel browser, gratuito, nessun dato inviato</small>
+              </span>
             </label>
-            <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <label class="radio-label">
               <input
                 type="radio"
                 name="ocr-provider"
                 value="openai"
+                class="radio-input"
                 [ngModel]="settings().ocrProvider"
                 (ngModelChange)="update({ ocrProvider: $event })"
-                class="text-emerald-600 focus:ring-emerald-500"
               />
-              GPT-4o Vision (richiede API key)
+              <span class="radio-text">
+                <strong>GPT-4o Vision</strong>
+                <small>Migliore precisione, richiede API key OpenAI</small>
+              </span>
             </label>
           </div>
         </fieldset>
+
+        @if (settings().ocrProvider === 'openai') {
+          <div class="field">
+            <label for="openai-key" class="field-label">OpenAI API Key</label>
+            <input
+              id="openai-key"
+              type="password"
+              autocomplete="off"
+              placeholder="sk-..."
+              [ngModel]="settings().openaiApiKey"
+              (ngModelChange)="update({ openaiApiKey: $event })"
+              class="field-input"
+              style="font-family: monospace"
+            />
+            <span class="field-hint">La chiave è salvata solo in LocalStorage nel tuo browser.</span>
+          </div>
+        }
       </div>
-      @if (settings().ocrProvider === 'openai') {
-        <div>
-          <label for="openai-key" class="block text-sm font-medium text-gray-700 mb-1">
-            OpenAI API Key
-          </label>
-          <input
-            id="openai-key"
-            type="password"
-            autocomplete="off"
-            placeholder="sk-..."
-            [ngModel]="settings().openaiApiKey"
-            (ngModelChange)="update({ openaiApiKey: $event })"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-          <p class="mt-1 text-xs text-gray-400">La chiave viene salvata solo in LocalStorage nel tuo browser.</p>
-        </div>
-      }
     </section>
 
+    <!-- ── Salva ─────────────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-4">
       <button
         (click)="save()"
-        class="px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
+        class="btn-primary"
         aria-live="polite"
-      >
-        Salva impostazioni
-      </button>
+      >Salva impostazioni</button>
       @if (saved()) {
-        <span class="text-sm text-emerald-600 font-medium" role="status">Salvato &#10003;</span>
+        <span class="text-sm font-medium" style="color:var(--color-accent)" role="status">
+          ✓ Salvato
+        </span>
       }
     </div>
+
   </div>
 </div>

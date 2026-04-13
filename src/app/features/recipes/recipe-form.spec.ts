@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { RecipeForm } from './recipe-form';
 
 describe('RecipeForm', () => {
@@ -8,16 +7,15 @@ describe('RecipeForm', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RecipeForm]
-    })
-    .compileComponents();
-
+      imports: [RecipeForm],
+    }).compileComponents();
     fixture = TestBed.createComponent(RecipeForm);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 });
+

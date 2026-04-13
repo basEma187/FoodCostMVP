@@ -1,108 +1,145 @@
-﻿<div class="max-w-4xl mx-auto">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-gray-900">Catalogo Ingredienti</h1>
-    <button
-      (click)="openAdd()"
-      class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
-    >
-      + Aggiungi ingrediente
-    </button>
+﻿<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Catalogo Ingredienti</h1>
+      <p class="page-subtitle">Gestisci i prezzi degli ingredienti con le relative unità di misura</p>
+    </div>
+    @if (!formOpen()) {
+      <button (click)="openAdd()" class="btn-primary">
+        <span aria-hidden="true">+</span>&nbsp;Aggiungi ingrediente
+      </button>
+    }
   </div>
 
-  <!-- Form -->
-  @if (editingId() !== undefined) {
-    <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6 shadow-sm">
-      <h2 class="text-base font-semibold text-gray-800 mb-4">
-        {{ editingId() ? 'Modifica ingrediente' : 'Nuovo ingrediente' }}
-      </h2>
-      <div class="grid grid-cols-2 gap-4">
-        <div class="col-span-2 sm:col-span-1">
-          <label for="ing-name" class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+  <!-- ── FORM ─────────────────────────────────────────────────────────────── -->
+  @if (formOpen()) {
+    <div class="card mb-6">
+      <div class="card-header">
+        <h2 class="card-title">
+          {{ editingId() ? 'Modifica ingrediente' : 'Nuovo ingrediente' }}
+        </h2>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Nome -->
+        <div class="field">
+          <label for="ing-name" class="field-label">Nome ingrediente *</label>
           <input
             id="ing-name"
             type="text"
+            autocomplete="off"
+            placeholder="es. Petto di pollo, Olio EVO, Uova…"
             [ngModel]="form().name"
             (ngModelChange)="updateForm({ name: $event })"
-            placeholder="es. Petto di pollo"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            class="field-input"
           />
         </div>
-        <div>
-          <label for="ing-price" class="block text-sm font-medium text-gray-700 mb-1">Prezzo al kg (€)</label>
-          <input
-            id="ing-price"
-            type="number"
-            min="0"
-            step="0.01"
-            [ngModel]="form().pricePerKg"
-            (ngModelChange)="updateForm({ pricePerKg: +$event })"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+
+        <!-- Prezzo + Unità di misura (stesso row) -->
+        <div class="field-row">
+          <div class="field" style="flex:1">
+            <label for="ing-price" class="field-label">Prezzo (€)</label>
+            <div class="input-addon-wrap">
+              <span class="input-addon input-addon--left" aria-hidden="true">€</span>
+              <input
+                id="ing-price"
+                type="number"
+                min="0"
+                step="0.01"
+                [ngModel]="form().pricePerUnit"
+                (ngModelChange)="updateForm({ pricePerUnit: +$event })"
+                class="field-input field-input--with-left-addon"
+              />
+            </div>
+          </div>
+          <div class="field" style="width:180px">
+            <label class="field-label" id="ing-unit-label">per unità di misura</label>
+            <app-select
+              aria-labelledby="ing-unit-label"
+              [value]="form().unit"
+              (valueChange)="updateForm({ unit: $any($event) })"
+              [options]="unitOptions"
+            />
+          </div>
         </div>
-        <div>
-          <label for="ing-cat" class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-          <select
-            id="ing-cat"
-            [ngModel]="form().category"
-            (ngModelChange)="updateForm({ category: $event })"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            @for (cat of categories; track cat) {
-              <option [value]="cat">{{ cat === 'food' ? 'Cibo' : 'Beverage' }}</option>
-            }
-          </select>
+
+        <!-- Categoria -->
+        <div class="field">
+          <p class="field-label" id="cat-label">Categoria</p>
+          <div class="toggle-group" role="group" aria-labelledby="cat-label">
+            <button
+              type="button"
+              (click)="updateForm({ category: 'food' })"
+              [class.active]="form().category === 'food'"
+              class="toggle-btn"
+            >🍽&nbsp;Cibo</button>
+            <button
+              type="button"
+              (click)="updateForm({ category: 'beverage' })"
+              [class.active]="form().category === 'beverage'"
+              class="toggle-btn"
+            >🥤&nbsp;Bevanda</button>
+          </div>
         </div>
-      </div>
-      <div class="flex gap-3 mt-4">
-        <button
-          (click)="save()"
-          class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors"
-        >
-          Salva
-        </button>
-        <button
-          (click)="openAdd()"
-          class="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-        >
-          Annulla
-        </button>
+
+      </div><!-- /card-body -->
+
+      <div class="card-footer">
+        <button (click)="save()" class="btn-primary">Salva ingrediente</button>
+        <button (click)="closeForm()" class="btn-secondary">Annulla</button>
       </div>
     </div>
   }
 
-  <!-- Table -->
-  @if (sortedIngredients().length === 0) {
-    <div class="text-center py-16 text-gray-400">
-      <p class="text-lg">Nessun ingrediente ancora.</p>
-      <p class="text-sm mt-1">Clicca "+ Aggiungi ingrediente" per iniziare.</p>
+  <!-- ── ELENCO ─────────────────────────────────────────────────────────────── -->
+  @if (sortedIngredients().length === 0 && !formOpen()) {
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">🥕</span>
+      <p class="empty-title">Nessun ingrediente ancora</p>
+      <p class="empty-desc">Aggiungi il primo ingrediente per iniziare a calcolare i food cost.</p>
+      <button (click)="openAdd()" class="btn-primary" style="margin-top:1.25rem">
+        + Aggiungi ingrediente
+      </button>
     </div>
-  } @else {
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50 border-b border-gray-200">
+  }
+
+  @if (sortedIngredients().length > 0) {
+    <div class="card">
+      <table class="data-table">
+        <thead>
           <tr>
-            <th class="text-left px-4 py-3 font-semibold text-gray-600">Nome</th>
-            <th class="text-left px-4 py-3 font-semibold text-gray-600">Categoria</th>
-            <th class="text-right px-4 py-3 font-semibold text-gray-600">€/kg</th>
-            <th class="px-4 py-3"></th>
+            <th scope="col">Nome</th>
+            <th scope="col">Categoria</th>
+            <th scope="col" class="text-right">Prezzo unitario</th>
+            <th scope="col"><span class="sr-only">Azioni</span></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-gray-100">
+        <tbody>
           @for (ing of sortedIngredients(); track ing.id) {
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-3 font-medium text-gray-900">{{ ing.name }}</td>
-              <td class="px-4 py-3 text-gray-500">{{ ing.category === 'food' ? 'Cibo' : 'Beverage' }}</td>
-              <td class="px-4 py-3 text-right font-mono text-gray-800">{{ ing.pricePerKg | number: '1.2-2' }} €</td>
-              <td class="px-4 py-3 text-right whitespace-nowrap">
+            <tr>
+              <td class="fw-medium">{{ ing.name }}</td>
+              <td>
+                <span [class]="'badge badge--' + (ing.category === 'food' ? 'green' : 'blue')">
+                  {{ ing.category === 'food' ? 'Cibo' : 'Bevanda' }}
+                </span>
+              </td>
+              <td class="text-right tabular">
+                <strong>{{ ing.pricePerUnit | number:'1.2-2' }} €</strong>
+                <span class="text-muted">&nbsp;/&nbsp;{{ unitShort(ing.unit) }}</span>
+              </td>
+              <td class="actions">
                 <button
                   (click)="openEdit(ing)"
-                  aria-label="Modifica {{ ing.name }}"
-                  class="text-indigo-600 hover:text-indigo-800 text-xs font-medium mr-3 focus:outline-none focus:underline"
+                  [attr.aria-label]="'Modifica ' + ing.name"
+                  class="btn-link"
                 >Modifica</button>
                 <button
                   (click)="delete(ing.id)"
-                  aria-label="Elimina {{ ing.name }}"
-                  class="text-red-500 hover:text-red-700 text-xs font-medium focus:outline-none focus:underline"
+                  [attr.aria-label]="'Elimina ' + ing.name"
+                  class="btn-danger-text"
                 >Elimina</button>
               </td>
             </tr>
@@ -111,4 +148,5 @@
       </table>
     </div>
   }
+
 </div>

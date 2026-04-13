@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 
 interface NavItem {
   path: string;
@@ -9,17 +10,19 @@ interface NavItem {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatIconModule],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   readonly navItems: NavItem[] = [
-    { path: '/catalog', label: 'Ingredienti', icon: '\uD83E\uDDC2' },
-    { path: '/recipes', label: 'Ricette', icon: '\uD83D\uDCCB' },
-    { path: '/documents', label: 'Documenti / OCR', icon: '\uD83D\uDCC4' },
-    { path: '/settings', label: 'Impostazioni', icon: '\u2699\uFE0F' },
+    { path: '/catalog',   label: 'Ingredienti',    icon: 'inventory_2'     },
+    { path: '/recipes',   label: 'Ricette',         icon: 'menu_book'       },
+    { path: '/documents', label: 'Documenti / OCR', icon: 'document_scanner'},
+    { path: '/samples',   label: 'Bolle campione',  icon: 'receipt_long'    },
+    { path: '/settings',  label: 'Impostazioni',    icon: 'settings'        },
   ];
 }
+
 

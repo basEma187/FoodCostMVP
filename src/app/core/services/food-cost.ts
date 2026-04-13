@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Ingredient } from '../models/ingredient';
+import { Ingredient, UNITS } from '../models/ingredient';
 import { Recipe, RecipeLine } from '../models/recipe';
 import { AppSettings } from '../models/settings';
 
@@ -8,23 +8,33 @@ export class FoodCostService {
 
   /**
    * Cost of a single recipe line in euro.
-   * For ingredients: pricePerKg * grams / 1000
-   * For sub-recipes: subRecipeTotalCost * grams / 1000 (treat cost/kg)
+   *
+   * For ingredients: normalises line.quantity to the ingredient's unit using
+   * toBase conversion factors, then multiplies by pricePerUnit.
+   *
+   * For sub-recipes: treats sub-recipe totalCost as €/kg and converts
+   * line.quantity (in its unit) to grams.
    */
   calcLineCost(
     line: RecipeLine,
     ingredients: Ingredient[],
     recipes: Recipe[]
   ): number {
+    const lineUnitDef = UNITS.find(u => u.key === line.unit) ?? UNITS[0];
+
     if (line.refType === 'ingredient') {
       const ing = ingredients.find(i => i.id === line.refId);
       if (!ing) return 0;
-      return (ing.pricePerKg * line.grams) / 1000;
+      const ingUnitDef = UNITS.find(u => u.key === ing.unit) ?? UNITS[0];
+      // Convert quantity in line unit → ingredient unit, then × pricePerUnit
+      const qtyInIngUnit = (line.quantity * lineUnitDef.toBase) / ingUnitDef.toBase;
+      return ing.pricePerUnit * qtyInIngUnit;
     } else {
       const sub = recipes.find(r => r.id === line.refId);
       if (!sub || !sub.totalCost) return 0;
-      // sub-recipe cost is treated as cost per kg of yield
-      return (sub.totalCost * line.grams) / 1000;
+      // Sub-recipe cost is treated as €/kg of yield
+      const quantityInGrams = line.quantity * lineUnitDef.toBase;
+      return (sub.totalCost * quantityInGrams) / 1000;
     }
   }
 

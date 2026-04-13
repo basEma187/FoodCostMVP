@@ -1,1 +1,38 @@
 @import 'tailwindcss';
+
+@theme {
+  /* Brand Colors */
+  --color-brand-navy:          #0f172a;
+  --color-brand-navy-800:      #1e293b;
+  --color-brand-navy-hover:    rgba(255, 255, 255, 0.07);
+  --color-brand-green:         #16a34a;
+  --color-brand-green-hover:   #15803d;
+  --color-brand-green-light:   #dcfce7;
+
+  /* Surfaces */
+  --color-surface:             #f8fafc;
+  --color-surface-alt:         #f1f5f9;
+
+  /* Text */
+  --color-text-primary:        #1e293b;
+  --color-text-secondary:      #64748b;
+  --color-text-muted:          #94a3b8;
+
+  /* Borders */
+  --color-border:              #e2e8f0;
+  --color-border-strong:       #cbd5e1;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Border Radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.10), 0 1px 2px -1px rgb(0 0 0 / 0.10);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -2px rgb(0 0 0 / 0.10);
+}

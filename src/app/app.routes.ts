@@ -22,5 +22,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/documents/documents-page').then(m => m.DocumentsPage),
   },
+  {
+    path: 'samples',
+    loadComponent: () =>
+      import('./features/samples/samples-page').then(m => m.SamplesPage),
+  },
 ];
 

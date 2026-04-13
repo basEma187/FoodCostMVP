@@ -88,14 +88,15 @@ export class DocumentsPage {
       if (existingIdx >= 0) {
         updated[existingIdx] = {
           ...updated[existingIdx],
-          pricePerKg: row.resolvedPricePerKg,
+          pricePerUnit: row.resolvedPricePerKg,
+          unit: 'kg',
           updatedAt: now,
         };
       } else {
         const newIng: Ingredient = {
           id: crypto.randomUUID(),
           name: row.name.trim(),
-          pricePerKg: row.resolvedPricePerKg,
+          pricePerUnit: row.resolvedPricePerKg,
           category: 'food',
           unit: 'kg',
           updatedAt: now,

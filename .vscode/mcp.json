@@ -10,8 +10,7 @@
         "-E", "test",
         "-E", "e2e",
         "-E", "modernize",
-        "-E", "devserver",
-        "-E", "search_documentation"
+        "-E", "devserver"
       ]
     }
   }

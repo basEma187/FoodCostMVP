@@ -1,0 +1,161 @@
+﻿<div class="max-w-5xl mx-auto">
+  @if (viewMode() === 'list') {
+    <!-- LIST VIEW -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Ricette</h1>
+      <button
+        (click)="openAdd()"
+        class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+      >+ Nuova ricetta</button>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+      @for (f of [['all','Tutte'],['recipe','Ricette'],['subrecipe','Preparazioni base']] ; track f[0]) {
+        <button
+          (click)="filter.set($any(f[0]))"
+          [class.bg-emerald-600]="filter() === f[0]"
+          [class.text-white]="filter() === f[0]"
+          [class.bg-white]="filter() !== f[0]"
+          [class.text-gray-700]="filter() !== f[0]"
+          class="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-colors"
+        >{{ f[1] }}</button>
+      }
+    </div>
+
+    @if (filteredRecipes().length === 0) {
+      <div class="text-center py-16 text-gray-400">
+        <p class="text-lg">Nessuna ricetta ancora.</p>
+      </div>
+    } @else {
+      <div class="grid gap-3">
+        @for (r of filteredRecipes(); track r.id) {
+          <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-gray-900">{{ r.name }}</span>
+                @if (r.isSubRecipe) {
+                  <span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Base</span>
+                }
+              </div>
+              @if (r.description) {
+                <p class="text-sm text-gray-500 mt-0.5">{{ r.description }}</p>
+              }
+              <p class="text-xs text-gray-400 mt-1">{{ r.lines.length }} ingredienti · {{ r.preparationMinutes }} min</p>
+            </div>
+            <div class="text-right shrink-0 ml-4">
+              <p class="text-lg font-bold text-emerald-700">{{ recipeTotalCost(r) | number:'1.2-2' }} €</p>
+              <div class="flex gap-2 mt-1 justify-end">
+                <button (click)="openEdit(r)" class="text-xs text-indigo-600 hover:text-indigo-800 focus:outline-none focus:underline">Modifica</button>
+                <button (click)="delete(r.id)" aria-label="Elimina {{ r.name }}" class="text-xs text-red-500 hover:text-red-700 focus:outline-none focus:underline">Elimina</button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  } @else {
+    <!-- FORM VIEW -->
+    <div class="flex items-center gap-3 mb-6">
+      <button (click)="cancel()" class="text-gray-500 hover:text-gray-800 focus:outline-none" aria-label="Torna alla lista">&#8592;</button>
+      <h1 class="text-2xl font-bold text-gray-900">{{ editingId() ? 'Modifica ricetta' : 'Nuova ricetta' }}</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left: meta -->
+      <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4 lg:col-span-1">
+        <div>
+          <label for="r-name" class="block text-sm font-medium text-gray-700 mb-1">Nome ricetta</label>
+          <input id="r-name" type="text" [ngModel]="formName()" (ngModelChange)="formName.set($event)"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+        <div>
+          <label for="r-desc" class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
+          <textarea id="r-desc" rows="2" [ngModel]="formDescription()" (ngModelChange)="formDescription.set($event)"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+        <div>
+          <label for="r-min" class="block text-sm font-medium text-gray-700 mb-1">Tempo preparazione (min)</label>
+          <input id="r-min" type="number" min="0" [ngModel]="formMinutes()" (ngModelChange)="formMinutes.set(+$event)"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="r-sub" type="checkbox" [ngModel]="formIsSubRecipe()" (ngModelChange)="formIsSubRecipe.set($event)"
+            class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+          <label for="r-sub" class="text-sm text-gray-700">Preparazione base (es. fondo bruno)</label>
+        </div>
+        <div class="pt-2 border-t border-gray-100">
+          <p class="text-xs text-gray-500">Costo totale stimato</p>
+          <p class="text-2xl font-bold text-emerald-700">{{ totalFormCost() | number:'1.2-2' }} €</p>
+        </div>
+        <button (click)="save()"
+          class="w-full px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+          Salva ricetta
+        </button>
+      </div>
+
+      <!-- Right: lines -->
+      <div class="lg:col-span-2 space-y-4">
+        <!-- Add line -->
+        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+          <h2 class="text-sm font-semibold text-gray-700 mb-3">Aggiungi ingrediente / preparazione base</h2>
+          <div class="flex flex-wrap gap-2">
+            <select [ngModel]="newLineRefType()" (ngModelChange)="newLineRefType.set($event); newLineRefId.set('')"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="ingredient">Ingrediente</option>
+              <option value="subrecipe">Preparazione base</option>
+            </select>
+            <select [ngModel]="newLineRefId()" (ngModelChange)="newLineRefId.set($event)"
+              class="flex-1 min-w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              <option value="">-- Seleziona --</option>
+              @for (ref of availableRefs(); track ref.id) {
+                <option [value]="ref.id">{{ ref.name }}</option>
+              }
+            </select>
+            <input type="number" min="1" [ngModel]="newLineGrams()" (ngModelChange)="newLineGrams.set(+$event)"
+              placeholder="grammi"
+              class="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            <button (click)="addLine()"
+              class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              Aggiungi
+            </button>
+          </div>
+        </div>
+
+        <!-- Lines table -->
+        @if (formLines().length > 0) {
+          <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="text-left px-4 py-2 font-semibold text-gray-600">Ingrediente</th>
+                  <th class="text-right px-4 py-2 font-semibold text-gray-600">Grammi</th>
+                  <th class="text-right px-4 py-2 font-semibold text-gray-600">Costo</th>
+                  <th class="px-4 py-2"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (line of formLines(); track line.id) {
+                  <tr>
+                    <td class="px-4 py-2 text-gray-900">
+                      {{ line.name }}
+                      @if (line.refType === 'subrecipe') {
+                        <span class="ml-1 text-xs text-amber-600">(base)</span>
+                      }
+                    </td>
+                    <td class="px-4 py-2 text-right font-mono text-gray-600">{{ line.grams }} g</td>
+                    <td class="px-4 py-2 text-right font-mono text-emerald-700">{{ lineCost(line) | number:'1.2-2' }} €</td>
+                    <td class="px-4 py-2 text-right">
+                      <button (click)="removeLine(line.id)" aria-label="Rimuovi {{ line.name }}"
+                        class="text-red-400 hover:text-red-600 focus:outline-none text-xs">Rimuovi</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

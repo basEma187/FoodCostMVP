@@ -1,0 +1,49 @@
+﻿# Dependencies
+node_modules/
+
+# Angular build outputs
+dist/
+.angular/
+.angular/cache/
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# VS Code — keep mcp.json and settings.json (project config), exclude personal/generated files
+.vscode/extensions.json
+.vscode/*.code-snippets
+.history/
+
+# JetBrains IDEs (IntelliJ, WebStorm, Rider…)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Other IDE artifacts
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# Temporary files
+*.tmp
+*.temp

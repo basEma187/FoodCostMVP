@@ -11,7 +11,8 @@ dist/
 .env.local
 .env.*.local
 
-# VS Code — keep mcp.json and settings.json (project config), exclude personal/generated files
+# VS Code — mcp.json is tracked (project-level Angular CLI config, shared with the team)
+.vscode/settings.json
 .vscode/extensions.json
 .vscode/*.code-snippets
 .history/

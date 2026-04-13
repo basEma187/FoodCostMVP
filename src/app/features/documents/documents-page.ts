@@ -1,18 +1,19 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Ingredient } from '../../core/models/ingredient';
+import { Ingredient, UNITS, UnitKey } from '../../core/models/ingredient';
 import { OcrLine, OcrService } from '../../core/services/ocr';
 import { StorageService } from '../../core/services/storage';
 
-interface ReviewRow extends OcrLine {
+export interface ReviewRow extends OcrLine {
   selected: boolean;
-  resolvedPricePerKg: number;
+  resolvedPricePerUnit: number;
 }
 
 type Status = 'idle' | 'processing' | 'review' | 'done' | 'error';
@@ -27,17 +28,20 @@ export class DocumentsPage {
   private readonly ocr = inject(OcrService);
   private readonly storage = inject(StorageService);
 
+  readonly units = UNITS;
+
   status = signal<Status>('idle');
   errorMessage = signal('');
   rows = signal<ReviewRow[]>([]);
   preview = signal<string | null>(null);
+
+  selectedCount = computed(() => this.rows().filter(r => r.selected && r.name.trim()).length);
 
   async onFile(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
-    // Image preview
     if (file.type.startsWith('image/')) {
       const url = URL.createObjectURL(file);
       this.preview.set(url);
@@ -54,7 +58,7 @@ export class DocumentsPage {
         lines.map(l => ({
           ...l,
           selected: true,
-          resolvedPricePerKg: l.pricePerKg ?? 0,
+          resolvedPricePerUnit: l.pricePerKg ?? (l.unitPrice ? parseFloat(l.unitPrice) : 0),
         }))
       );
       this.status.set('review');
@@ -75,6 +79,10 @@ export class DocumentsPage {
     });
   }
 
+  unitLabel(key: UnitKey): string {
+    return UNITS.find(u => u.key === key)?.short ?? key;
+  }
+
   confirm(): void {
     const existing = this.storage.getIngredients();
     const selected = this.rows().filter(r => r.selected && r.name.trim());
@@ -88,17 +96,17 @@ export class DocumentsPage {
       if (existingIdx >= 0) {
         updated[existingIdx] = {
           ...updated[existingIdx],
-          pricePerUnit: row.resolvedPricePerKg,
-          unit: 'kg',
+          pricePerUnit: row.resolvedPricePerUnit,
+          unit: row.unit,
           updatedAt: now,
         };
       } else {
         const newIng: Ingredient = {
           id: crypto.randomUUID(),
           name: row.name.trim(),
-          pricePerUnit: row.resolvedPricePerKg,
+          pricePerUnit: row.resolvedPricePerUnit,
           category: 'food',
-          unit: 'kg',
+          unit: row.unit,
           updatedAt: now,
         };
         updated.push(newIng);
